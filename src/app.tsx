@@ -126,3 +126,14 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
 		...initialState?.settings,
 	};
 };
+
+export function onRouteChange({ location }: { location: any }) {
+  const isLoggedIn = localStorage.getItem('isLoggedIn');
+  if (
+    location.pathname !== '/simple-login' &&
+    location.pathname !== '/user/login' &&
+    !isLoggedIn
+  ) {
+    window.g_history?.replace?.('/simple-login');
+  }
+}

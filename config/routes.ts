@@ -1,5 +1,10 @@
 ﻿export default [
 	{
+		path: '/simple-login',
+		layout: false,
+		component: './Auth/SimpleLogin',
+	},
+	{
 		path: '/user',
 		layout: false,
 		routes: [
@@ -21,8 +26,9 @@
 	{
 		path: '/dashboard',
 		name: 'Dashboard',
-		component: './TrangChu',
+		component: './TrangChu/Dashboard',
 		icon: 'HomeOutlined',
+		access: (ctx: any) => ctx.isAdmin || ctx.isStudent, // Cả admin và user đều xem được
 	},
 	{
 		path: '/gioi-thieu',
@@ -35,6 +41,48 @@
 		name: 'RandomUser',
 		component: './RandomUser',
 		icon: 'ArrowsAltOutlined',
+	},
+	{
+		path: '/admin-admin',
+		name: 'AdminAdmin',
+		component: './Admin/AdminAdmin',
+		icon: 'TeamOutlined',
+		access: 'isAdmin', // Chỉ admin xem được
+	},
+	{
+		path: '/student-admin',
+		name: 'StudentAdmin',
+		component: './Student/StudentAdmin',
+		icon: 'UserOutlined',
+		access: 'isAdmin', // Chỉ admin xem được
+	},
+	{
+		path: '/device-admin',
+		name: 'DeviceAdmin',
+		component: './Device/DeviceAdmin',
+		icon: 'AppstoreOutlined',
+		access: 'isAdmin', // Chỉ admin xem được
+	},
+	{
+		path: '/borrow-manager-tabs',
+		name: 'Quản lý mượn (Tabs)',
+		component: './BorrowManager/BorrowManagerTabs',
+		icon: 'AppstoreAddOutlined',
+		access: 'isAdmin', // Chỉ admin xem được
+	},
+	{
+		path: '/borrow-device',
+		name: 'Mượn thiết bị',
+		component: './Borrow/BorrowDevice',
+		icon: 'ShoppingCartOutlined',
+		access: 'isStudent', // Chỉ user/sinh viên xem được
+	},
+	{
+		path: '/student-borrow-history',
+		name: 'Lịch sử mượn thiết bị',
+		component: './Borrow/StudentBorrowHistory',
+		icon: 'HistoryOutlined',
+		access: 'isStudent', // Chỉ user/sinh viên xem được
 	},
 
 	// DANH MUC HE THONG
