@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Table, Tag, Button, Modal, Input, message } from 'antd';
+import React from 'react';
+import { Table, Tag, Button, Modal, Input } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { BorrowRecord, BorrowStatus } from '../../services/Borrow/typings';
 import { statusColors, statusLabels } from '../../services/Borrow/constants';
 import dayjs from 'dayjs';
+import { useBorrowTableLogic } from '../../hooks/useBorrowTableLogic';
 
 interface BorrowTableProps {
   data: BorrowRecord[];
@@ -12,52 +13,22 @@ interface BorrowTableProps {
 }
 
 const BorrowTable: React.FC<BorrowTableProps> = ({ data, status, onUpdateStatus }) => {
-  const [rejectReason, setRejectReason] = useState('');
-  const [rejectModalVisible, setRejectModalVisible] = useState(false);
-  const [rejectingRecord, setRejectingRecord] = useState<BorrowRecord | null>(null);
-
-  const handleApprove = (record: BorrowRecord) => {
-    Modal.confirm({
-      title: `Duyệt yêu cầu mượn "${record.deviceName}"?`,
-      onOk: () => onUpdateStatus(record.id, 'borrowing'),
-    });
-  };
-
-  const openRejectModal = (record: BorrowRecord) => {
-    setRejectingRecord(record);
-    setRejectReason('');
-    setRejectModalVisible(true);
-  };
-
-  const handleRejectConfirm = () => {
-    if (!rejectReason.trim()) {
-      message.warning('Vui lòng nhập lý do từ chối');
-      return;
-    }
-
-    if (rejectingRecord) {
-      onUpdateStatus(rejectingRecord.id, 'rejected', rejectReason);
-    }
-
-    setRejectReason('');
-    setRejectingRecord(null);
-    setRejectModalVisible(false);
-  };
-
-  const handleReturn = (record: BorrowRecord) => {
-    Modal.confirm({
-      title: `Đánh dấu thiết bị "${record.deviceName}" đã trả?`,
-      onOk: () => onUpdateStatus(record.id, 'returned'),
-    });
-  };
-
-  const handleSendMail = (record: BorrowRecord) => {
-    message.info(`Đã gửi email nhắc nhở cho ${record.student.fullName}`);
-  };
+  const {
+    rejectReason,
+    setRejectReason,
+    rejectModalVisible,
+    setRejectModalVisible,
+    rejectingRecord,
+    handleApprove,
+    openRejectModal,
+    handleRejectConfirm,
+    handleReturn,
+    handleSendMail,
+  } = useBorrowTableLogic(onUpdateStatus);
 
   const columns: ColumnsType<BorrowRecord> = [
     { title: 'Họ tên', dataIndex: ['student', 'fullName'], align: 'center' },
-    { title: 'Mã SV', dataIndex: ['student', 'code'], align: 'center' },
+    { title: 'Mã SV', dataIndex: ['student', 'studentId'], align: 'center' },
     { title: 'SĐT', dataIndex: ['student', 'phoneNumber'], align: 'center' },
     { title: 'Thiết bị', dataIndex: 'deviceName', align: 'center' },
     {

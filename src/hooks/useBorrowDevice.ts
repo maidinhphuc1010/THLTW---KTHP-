@@ -1,49 +1,53 @@
-// src/hooks/useBorrowDevice.ts
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { message } from 'antd';
-import dayjs from 'dayjs';
+import { useModel } from 'umi';
 import type { Device } from '@/types/device';
 import type { BorrowRecord } from '@/types/borrow';
-import { useModel } from 'umi';
+import dayjs from 'dayjs';
 
 export const useBorrowDevice = () => {
   const { data: devices, updateDevice, reload: reloadDevices } = useModel('deviceAdmin');
   const { createBorrowRecord } = useModel('borrowRecordAdmin');
 
-  const [currentUser, setCurrentUser] = useState<{
-    id: string;
-    email: string;
-    fullName: string;
-  } | null>(null);
+  const [searchText, setSearchText] = useState('');
+  const [viewingDescription, setViewingDescription] = useState('');
+  const [borrowModalOpen, setBorrowModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState<Device.Info | null>(null);
+  const [borrowInfo, setBorrowInfo] = useState<{ quantity: number; reason: string; returnDate: any } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string; email: string; fullName: string } | null>(null);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
     setCurrentUser(user);
   }, []);
 
-  const borrowDevice = async (
-    values: any,
-    selectedDevice: Device.Info | null,
-    onSuccess: () => void,
-    onFail: () => void,
-  ) => {
-    try {
-      if (!selectedDevice || !currentUser) return;
+  const openBorrowModal = (device: Device.Info) => {
+    setSelectedDevice(device);
+    setBorrowModalOpen(true);
+  };
 
-      const { quantity, reason, returnDate } = values;
+  const handleBorrowFormSubmit = (info: { quantity: number; reason: string; returnDate: any }) => {
+    setBorrowInfo(info);
+    setConfirmModalOpen(true);
+  };
+
+  const handleConfirmBorrow = async () => {
+    if (!selectedDevice || !currentUser || !borrowInfo) return;
+
+    try {
+      const { quantity, reason, returnDate } = borrowInfo;
+
       if (quantity > selectedDevice.quantity) {
         message.error(`Không đủ số lượng thiết bị "${selectedDevice.name}"`);
-        return onFail();
+        setConfirmModalOpen(false);
+        return;
       }
 
-      const updatedDevice: Device.Info = {
-        ...selectedDevice,
-        quantity: selectedDevice.quantity - quantity,
-      };
+      const updated = { ...selectedDevice, quantity: selectedDevice.quantity - quantity };
+      await updateDevice(updated);
 
-      await updateDevice(updatedDevice);
-
-      const newBorrowRecord: BorrowRecord = {
+      const newRecord: BorrowRecord = {
         id: `${Date.now()}`,
         student: {
           id: currentUser.id,
@@ -59,20 +63,35 @@ export const useBorrowDevice = () => {
         description: reason,
       };
 
-      await createBorrowRecord(newBorrowRecord);
+      await createBorrowRecord(newRecord);
       message.success('Yêu cầu mượn đã được gửi, chờ duyệt.');
-      onSuccess();
+      setBorrowModalOpen(false);
+      setConfirmModalOpen(false);
+      setBorrowInfo(null);
       reloadDevices();
-    } catch (error) {
-      console.error(error);
+    } catch (e) {
+      console.error(e);
       message.error('Lỗi khi mượn thiết bị.');
-      onFail();
     }
   };
 
   return {
     devices,
+    searchText,
+    setSearchText,
+    viewingDescription,
+    setViewingDescription,
+    borrowModalOpen,
+    setBorrowModalOpen,
+    confirmModalOpen,
+    setConfirmModalOpen,
+    selectedDevice,
+    setSelectedDevice,
+    borrowInfo,
+    setBorrowInfo,
+    openBorrowModal,
+    handleBorrowFormSubmit,
+    handleConfirmBorrow,
     currentUser,
-    borrowDevice,
   };
 };

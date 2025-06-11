@@ -37,37 +37,38 @@
 		hideInMenu: true,
 	},
 	{
-		path: '/random-user',
-		name: 'RandomUser',
-		component: './RandomUser',
-		icon: 'ArrowsAltOutlined',
-	},
-	{
 		path: '/admin-admin',
-		name: 'AdminAdmin',
+		name: 'Quản lý nhân viên ',
 		component: './Admin/AdminAdmin',
 		icon: 'TeamOutlined',
 		access: 'isAdmin', // Chỉ admin xem được
 	},
 	{
 		path: '/student-admin',
-		name: 'StudentAdmin',
+		name: 'Quản lý sinh viên ',
 		component: './Student/StudentAdmin',
 		icon: 'UserOutlined',
 		access: 'isAdmin', // Chỉ admin xem được
 	},
 	{
 		path: '/device-admin',
-		name: 'DeviceAdmin',
+		name: 'Quản lý thiết bị ',
 		component: './Device/DeviceAdmin',
 		icon: 'AppstoreOutlined',
 		access: 'isAdmin', // Chỉ admin xem được
 	},
 	{
 		path: '/borrow-manager-tabs',
-		name: 'Quản lý mượn (Tabs)',
+		name: 'Quản lý mượn trả  ',
 		component: './BorrowManager/BorrowManagerTabs',
 		icon: 'AppstoreAddOutlined',
+		access: 'isAdmin', // Chỉ admin xem được
+	},
+	{
+		path: '/borrow-stats',
+		name: 'Thống kê mượn thiết bị',
+		component: './Stastis/BorrowStatsPage',
+		icon: 'BarChartOutlined',
 		access: 'isAdmin', // Chỉ admin xem được
 	},
 	{

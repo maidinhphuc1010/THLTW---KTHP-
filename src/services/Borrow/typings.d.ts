@@ -1,16 +1,10 @@
-export type BorrowStatus = 'waiting' | 'borrowing' | 'overdue' | 'returned' | 'rejected';
+import type { Student as StudentNS } from '../Student/typings';
 
-export interface Student {
-  id: string;
-  fullName: string;
-  code: string;
-  email: string;
-  phoneNumber: string;
-}
+export type BorrowStatus = 'waiting' | 'borrowing' | 'overdue' | 'returned' | 'rejected';
 
 export interface BorrowRecord {
   id: string;
-  student: Student;
+  student: StudentNS.ShortInfo; // hoặc StudentNS.Info nếu muốn đầy đủ
   userEmail: string;
   deviceName: string;
   borrowDate: string;

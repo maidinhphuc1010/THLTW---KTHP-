@@ -1,44 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { Tabs, message, Input, Button } from 'antd';
-import type { BorrowRecord, BorrowStatus } from '../../services/Borrow/typings';
+import React from 'react';
+import { Tabs, Input, Button } from 'antd';
+import type { BorrowStatus } from '../../services/Borrow/typings';
 import BorrowTable from './BorrowTable';
 import * as XLSX from 'xlsx';
+import { useBorrowManager } from '../../hooks/useBorrowManager';
 
 const { TabPane } = Tabs;
 
 const BorrowManagerTabs: React.FC = () => {
-  const [data, setData] = useState<BorrowRecord[]>([]);
-  const [searchText, setSearchText] = useState('');
+  const { searchText, setSearchText, updateStatus, getDataByStatus } = useBorrowManager();
 
-  useEffect(() => {
-    const stored = localStorage.getItem('borrowData');
-    const parsed: BorrowRecord[] = stored ? JSON.parse(stored) : [];
-    setData(parsed);
-  }, []);
-
-  const updateStatus = (id: string, newStatus: BorrowStatus, reason?: string) => {
-    const newData = data.map((record) =>
-      record.id === id
-        ? {
-            ...record,
-            status: newStatus,
-            ...(newStatus === 'rejected' && reason ? { rejectReason: reason } : {}),
-          }
-        : record
-    );
-    localStorage.setItem('borrowData', JSON.stringify(newData));
-    setData(newData);
-    message.success('Cập nhật trạng thái thành công!');
-  };
-
-  const getDataByStatus = (status: BorrowStatus | 'all') => {
-    const filtered = status === 'all' ? data : data.filter((item) => item.status === status);
-    return filtered.filter((record) =>
-      record.deviceName.toLowerCase().includes(searchText.toLowerCase())
-    );
-  };
-
-  const exportToExcel = (records: BorrowRecord[], filename: string) => {
+  const exportToExcel = (records: any[], filename: string) => {
     const worksheet = XLSX.utils.json_to_sheet(records);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'YeuCauMuon');
@@ -56,9 +28,7 @@ const BorrowManagerTabs: React.FC = () => {
             onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 300 }}
           />
-          <Button onClick={() => exportToExcel(filtered, `yeu_cau_${key}`)}>
-            Xuất Excel
-          </Button>
+          <Button onClick={() => exportToExcel(filtered, `yeu_cau_${key}`)}>Xuất Excel</Button>
         </div>
         <BorrowTable data={filtered} status={key} onUpdateStatus={updateStatus} />
       </div>
