@@ -4,6 +4,7 @@ import type { BorrowRecord } from '../services/Borrow/typings';
 export default function useBorrowRecords() {
   const [data, setData] = useState<BorrowRecord[]>([]);
   const [isApprovedModalVisible, setIsApprovedModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState(''); // Thông báo modal
 
   // Lấy dữ liệu mượn từ localStorage
   const getDataBorrow = () => {
@@ -12,7 +13,6 @@ export default function useBorrowRecords() {
       if (raw) {
         let parsed = JSON.parse(raw) as BorrowRecord[];
 
-        // Kiểm tra quá hạn
         const now = new Date();
         parsed = parsed.map((record) => {
           const returnDate = new Date(record.returnDate);
@@ -41,6 +41,7 @@ export default function useBorrowRecords() {
     getDataBorrow(); // Lấy dữ liệu khi component mount
   }, []);
 
+  // Ghi dữ liệu vào localStorage
   const saveData = (records: BorrowRecord[]) => {
     setData(records);
     try {
@@ -57,12 +58,11 @@ export default function useBorrowRecords() {
     }
   };
 
-  // Thêm bản ghi mượn mới
+  // Thêm bản ghi mượn
   const addBorrowRecord = (record: BorrowRecord) => {
     const newData = [record, ...data];
     saveData(newData);
 
-    // Cập nhật số lượng thiết bị khi mượn
     const devices = JSON.parse(localStorage.getItem('deviceData') || '[]') as Device.Info[];
     const deviceIndex = devices.findIndex(device => device.name === record.deviceName);
 
@@ -80,8 +80,17 @@ export default function useBorrowRecords() {
     const newData = data.map(item => (item.id === record.id ? record : item));
     saveData(newData);
 
-    // Nếu bản ghi được duyệt (từ waiting -> borrowing) thì hiện modal
-    if (prevRecord?.status === 'waiting' && record.status === 'borrowing') {
+    // Hiện modal khi duyệt hoặc từ chối
+    const isApproved = prevRecord?.status === 'waiting' && record.status === 'borrowing';
+    const isRejected = prevRecord?.status === 'waiting' && record.status === 'rejected';
+
+    if (isApproved) {
+      setModalMessage('Yêu cầu đã được duyệt!');
+      setIsApprovedModalVisible(true);
+    }
+
+    if (isRejected) {
+      setModalMessage('Yêu cầu đã bị từ chối!');
       setIsApprovedModalVisible(true);
     }
 
@@ -105,5 +114,6 @@ export default function useBorrowRecords() {
     updateBorrowRecord,
     isApprovedModalVisible,
     setIsApprovedModalVisible,
+    modalMessage,
   };
 }
